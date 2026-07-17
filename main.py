@@ -34,8 +34,7 @@ from src.config import setup_env
 
 _INITIAL_PROCESS_ENV = dict(os.environ)
 setup_env()
-dashscope.api_key = 
-os.getenv("ANSPIRE_API_KEY")
+dashscope.api_key = os.getenv("ANSPIRE_API_KEY")
 
 # 代理配置 - 通过 USE_PROXY 环境变量控制，默认关闭
 # GitHub Actions 环境自动跳过代理配置
