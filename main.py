@@ -1542,3 +1542,18 @@ def main() -> int:
 if __name__ == "__main__":
     multiprocessing.freeze_support()
     sys.exit(main())
+def send_msg(text):
+    import requests, json
+    webhook_url = os.getenv("FEISHU_WEBHOOK")
+    if not webhook_url:
+        print("未配置推送链接，跳过发送")
+        return
+    # 钉钉标准文本格式
+    post_data = {
+        "msgtype": "text",
+        "text": {
+            "content": text
+        }
+    }
+    res = requests.post(webhook_url, json=post_data, timeout=12)
+    print("推送返回结果：", res.text)
