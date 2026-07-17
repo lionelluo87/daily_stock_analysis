@@ -1541,9 +1541,8 @@ def send_msg(text: str):
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
-    res = main()
-sys.exit(res)
-
+  res = main()
+  sys.exit(res)
     webhook_url = os.getenv("FEISHU_WEBHOOK")
     if not webhook_url:
         print("未配置钉钉推送地址，跳过消息发送")
