@@ -984,15 +984,15 @@ def run_full_analysis(
         # 钉钉推送
         ding_webhook = os.getenv("DING_WEBHOOK")
         if ding_webhook:
-        send_json = {
-        "msgtype": "text",
-        "text": {"content": f"今日股票AI分析报告：\n{report_text}"},
-        }
-        try:
-        res = requests.post(ding_webhook, json=send_json, timeout=15)
-        logger.info("钉钉消息推送成功")
-        except Exception as err:
-        logger.warning(f"钉钉推送失败：{str(err)}")
+           send_json = {
+             "msgtype": "text",
+             "text": {"content": f"今日股票AI分析报告：\n{report_text}"},
+           }
+           try:
+             res = requests.post(ding_webhook, json=send_json, timeout=15)
+             logger.info("钉钉消息推送成功")
+           except Exception as err:
+             logger.warning(f"钉钉推送失败：{str(err)}")
 
 
         # === Auto backtest ===
