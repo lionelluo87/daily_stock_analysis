@@ -1541,9 +1541,9 @@ def send_msg(text: str):
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
-  res = main()
-  sys.exit(res)
-    def send_msg(text: str):
+    res = main()
+    sys.exit(res)
+def send_msg(text: str):
     import os
     import requests
     webhook_url = os.getenv("FEISHU_WEBHOOK")
