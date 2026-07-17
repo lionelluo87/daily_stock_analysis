@@ -1543,9 +1543,12 @@ if __name__ == "__main__":
     multiprocessing.freeze_support()
   res = main()
   sys.exit(res)
+    def send_msg(text: str):
+    import os
+    import requests
     webhook_url = os.getenv("FEISHU_WEBHOOK")
     if not webhook_url:
-        print("未配置钉钉推送地址，跳过消息发送")
+        print("未配置飞书推送地址，跳过消息发送")
         return
     post_data = {
         "msgtype": "text",
@@ -1553,8 +1556,8 @@ if __name__ == "__main__":
     }
     try:
         res = requests.post(webhook_url, json=post_data, timeout=12)
-        print("钉钉推送返回结果：", res.text)
+        print("飞书推送返回结果: ", res.text)
     except Exception as e:
-        print("钉钉推送异常：", str(e))
+        print(f"推送异常，不中断程序：{str(e)}")
 send_msg(report_content)
 return 0
