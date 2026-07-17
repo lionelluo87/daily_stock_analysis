@@ -1555,12 +1555,4 @@ def send_msg(text: str):
         print("飞书推送返回结果: ", res.text)
     except Exception as e:
         print(f"推送异常，不中断程序：{str(e)}")
-from datetime import datetime
-# 把你代码里装AI分析文字的变量填到这里，比如ans、result、output
-text = result
 
-# 保存报告
-name = datetime.now().strftime("%Y%m%d")
-with open(f"reports/logs/{name}报告.txt","w",encoding="utf-8") as f:
-    f.write(text)
-print("报告生成成功，在reports/logs文件夹里")
