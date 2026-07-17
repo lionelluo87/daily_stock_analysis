@@ -53,6 +53,7 @@ jobs:
       - name: 安装依赖
         run: |
           pip install --upgrade pip
+          pip install dashscope
           pip install -r requirements.txt
       
       - name: 创建必要目录
