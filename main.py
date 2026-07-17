@@ -978,8 +978,8 @@ def run_full_analysis(
         report_time = datetime.now().strftime("%Y%m%d")
         report_text = full_content
         with open(f"reports/logs/{report_time}每日分析报告.txt","w",encoding="utf-8") as f:
-        f.write(report_text)
-        logger.info(f"本地报告已生成，路径：reports/logs/{report_time}每日分析报告.txt")
+            f.write(report_text)
+            logger.info(f"本地报告已生成，路径：reports/logs/{report_time}每日分析报告.txt")
 
         # 钉钉推送
         ding_webhook = os.getenv("DING_WEBHOOK")
