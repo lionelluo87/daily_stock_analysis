@@ -22,16 +22,16 @@ A股自选股智能分析系统 - 主调度程序
 - 买点偏好：缩量回踩 MA5/MA10 支撑
 """
 from __future__ import annotations
-
+import dashscope
 import json
 import multiprocessing
 import os
 from pathlib import Path
 import requests
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-
 from dotenv import dotenv_values
-from src.config import setup_env
+from src.config import setup_env()# 绑定阿里云通义千问API密钥
+dashscope.api_key = os.getenv("QWEN_API_KEY")
 
 _INITIAL_PROCESS_ENV = dict(os.environ)
 setup_env()
