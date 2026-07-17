@@ -1554,4 +1554,4 @@ def send_msg(text: str):
     except Exception as e:
         print(f"推送异常，不中断程序：{str(e)}")
 send_msg(report_content)
-return 0
+    return 0
