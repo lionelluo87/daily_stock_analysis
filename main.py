@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import multiprocessing
 import os
+import dashscope
 from pathlib import Path
 import requests
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
