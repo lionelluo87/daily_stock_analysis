@@ -1538,12 +1538,6 @@ def main() -> int:
         logger.exception(f"程序执行失败: {e}")
         return 1
 def send_msg(text: str):
-
-if __name__ == "__main__":
-    multiprocessing.freeze_support()
-    res = main()
-    sys.exit(res)
-def send_msg(text: str):
     import os
     import requests
     webhook_url = os.getenv("FEISHU_WEBHOOK")
