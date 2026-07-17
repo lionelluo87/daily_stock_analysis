@@ -1537,12 +1537,13 @@ def main() -> int:
     except Exception as e:
         logger.exception(f"程序执行失败: {e}")
         return 1
-
+def send_msg(text: str):
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
-    sys.exit(main())
-def send_msg(text: str):
+    res = main()
+sys.exit(res)
+
     webhook_url = os.getenv("FEISHU_WEBHOOK")
     if not webhook_url:
         print("未配置钉钉推送地址，跳过消息发送")
@@ -1556,3 +1557,5 @@ def send_msg(text: str):
         print("钉钉推送返回结果：", res.text)
     except Exception as e:
         print("钉钉推送异常：", str(e))
+send_msg(report_content)
+return 0
