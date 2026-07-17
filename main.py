@@ -22,7 +22,6 @@ A股自选股智能分析系统 - 主调度程序
 - 买点偏好：缩量回踩 MA5/MA10 支撑
 """
 from __future__ import annotations
-import dashscope
 import json
 import multiprocessing
 import os
@@ -1382,12 +1381,13 @@ def main() -> int:
         logger.info("通过 /api/v1/analysis/analyze 接口触发分析")
         logger.info(f"API 文档: http://{args.host}:{args.port}/docs")
         logger.info("按 Ctrl+C 退出...")
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            logger.info("\n用户中断，程序退出")
+    try:
+        while True:
+         time.sleep(1)
+         send_msg(report_content)
         return 0
+    except KeyboardInterrupt:
+        pass
 
     try:
         # 模式0: 回测
