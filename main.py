@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import multiprocessing
 import os
+from datetime import datetime
 import dashscope
 from pathlib import Path
 import requests
@@ -972,25 +973,25 @@ def run_full_analysis(
 
         except Exception as e:
             logger.error(f"飞书文档生成失败: {e}")
-           # 保存本地报告
-os.makedirs("reports/logs", exist_ok=True)
-report_time = datetime.now().strftime("%Y%m%d")
-report_text = full_content
-with open(f"reports/logs/{report_time}每日分析报告.txt","w",encoding="utf-8") as f:
-    f.write(report_text)
-logger.info(f"本地报告已生成，路径：reports/logs/{report_time}每日分析报告.txt")
+        # 保存本地报告
+        os.makedirs("reports/logs", exist_ok=True)
+        report_time = datetime.now().strftime("%Y%m%d")
+        report_text = full_content
+        with open(f"reports/logs/{report_time}每日分析报告.txt","w",encoding="utf-8") as f:
+        f.write(report_text)
+        logger.info(f"本地报告已生成，路径：reports/logs/{report_time}每日分析报告.txt")
 
-# 钉钉推送
-ding_webhook = os.getenv("DING_WEBHOOK")
-if ding_webhook:
-    send_json = {
+        # 钉钉推送
+        ding_webhook = os.getenv("DING_WEBHOOK")
+        if ding_webhook:
+        send_json = {
         "msgtype": "text",
         "text": {"content": f"今日股票AI分析报告：\n{report_text}"},
-    }
-    try:
+        }
+        try:
         res = requests.post(ding_webhook, json=send_json, timeout=15)
         logger.info("钉钉消息推送成功")
-    except Exception as err:
+        except Exception as err:
         logger.warning(f"钉钉推送失败：{str(err)}")
 
 
