@@ -27,6 +27,7 @@ import json
 import multiprocessing
 import os
 from pathlib import Path
+import requests
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from dotenv import dotenv_values
