@@ -986,12 +986,12 @@ def run_full_analysis(
         try:
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(report_text)
-        # 调试打印
-        print("生成文件完整路径：", file_path)
-        print("目录文件列表：", os.listdir("reports/logs"))
-        logger.info(f"本地报告已生成，路径：{file_path}")
-    except Exception as write_err:
-        logger.error(f"写入本地txt文件失败：{write_err}")
+            # 调试打印
+            print("生成文件完整路径：", file_path)
+            print("目录文件列表：", os.listdir("reports/logs"))
+            logger.info(f"本地报告已生成，路径：{file_path}")
+        except Exception as write_err:
+            logger.error(f"写入本地txt文件失败：{write_err}")
 
         # 钉钉推送 代码不变
         ding_webhook = os.getenv("DING_WEBHOOK")
