@@ -973,41 +973,27 @@ try:
 except Exception as write_err:
     logger.error(f"写入本地txt文件失败：{write_err}")
 
-        # 强制生成本地日报文件，无论飞书成功失败
-        os.makedirs("reports/logs", exist_ok=True)
-        report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_text = full_content if full_content else "今日暂无分析数据"
-        file_path = f"reports/logs/{report_time}_daily_analysis.txt"
-        try:
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write(report_text)
-            print("生成文件完整路径：", file_path)
-            print("目录文件列表：", os.listdir("reports/logs"))
-            logger.info(f"本地报告已生成，路径：{file_path}")
-        except Exception as write_err:
-            logger.error(f"写入本地txt文件失败：{write_err}")
+# === Auto backtest 回测代码（同上面代码对齐，取消多余缩进）
+try:
+    if getattr(config, 'backtest_enabled', False):
+        from src.services.backtest_service import BacktestService
 
-        # === Auto backtest 回测代码（同上面代码对齐，取消多余缩进）
-        try:
-            if getattr(config, 'backtest_enabled', False):
-                from src.services.backtest_service import BacktestService
+        logger.info("开始自动回测...")
+        service = BacktestService()
+        stats = service.run_backtest(
+            force=False,
+            eval_window_days=getattr(config, 'backtest_eval_window_days', 10),
+            min_age_days=getattr(config, 'backtest_min_age_days', 14),
+            limit=200,
+        )
+        logger.info(
+            f"自动回测完成: processed={stats.get('processed')} saved={stats.get('saved')} "
+            f"completed={stats.get('completed')} insufficient={stats.get('insufficient')} errors={stats.get('errors')}"
+        )
+except Exception as e:
+    logger.warning(f"自动回测失败（已忽略）: {e}")
 
-                logger.info("开始自动回测...")
-                service = BacktestService()
-                stats = service.run_backtest(
-                    force=False,
-                    eval_window_days=getattr(config, 'backtest_eval_window_days', 10),
-                    min_age_days=getattr(config, 'backtest_min_age_days', 14),
-                    limit=200,
-                )
-                logger.info(
-                    f"自动回测完成: processed={stats.get('processed')} saved={stats.get('saved')} "
-                    f"completed={stats.get('completed')} insufficient={stats.get('insufficient')} errors={stats.get('errors')}"
-                )
-        except Exception as e:
-            logger.warning(f"自动回测失败（已忽略）: {e}")
-
-        return True
+return True
 
 # 【关键！同 run_full_analysis 最开头嘅 try 完全对齐，唔好缩进】
 except Exception as e:
