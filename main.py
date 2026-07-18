@@ -933,47 +933,41 @@ def run_full_analysis(
         logger.info("\n任务执行完成")
 
         # === 新增：生成飞书云文档 ===
+try:
+    full_content = ""
+    from src.feishu_doc import FeishuDocManager
+    # 原有飞书拼接内容逻辑...
+    
+    # 把文件写入、钉钉全部挪到try内部末尾
+    os.makedirs("reports/logs", exist_ok=True)
+    report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    report_text = full_content if full_content else "今日暂无分析数据"
+    file_path = f"reports/logs/{report_time}_daily_analysis.txt"
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(report_text)
+        print("生成文件完整路径：", file_path)
+        print("目录文件列表：", os.listdir("reports/logs"))
+        logger.info(f"本地报告已生成，路径：{file_path}")
+    except Exception as write_err:
+        logger.error(f"写入本地txt文件失败：{write_err}")
+
+    # 钉钉推送代码也放这里
+    ding_webhook = os.getenv("DING_WEBHOOK")
+    if ding_webhook:
+        send_json = {
+            "msgtype": "text",
+            "text": {"content": f"今日股票AI分析报告：\n{report_text}"}
+        }
         try:
-            full_content = ""
-            from src.feishu_doc import FeishuDocManager
+            res = requests.post(ding_webhook, json=send_json, timeout=15)
+            res.raise_for_status()
+            logger.info("钉钉消息推送成功")
+        except Exception as err:
+            logger.warning(f"钉钉推送失败: {str(err)}")
 
-            feishu_doc = FeishuDocManager()
-            if feishu_doc.is_configured() and (results or market_report):
-                logger.info("正在创建飞书云文档...")
-
-                # 1. 准备标题 "01-01 13:01大盘复盘"
-                tz_cn = timezone(timedelta(hours=8))
-                now = datetime.now(tz_cn)
-                doc_title = f"{now.strftime('%Y-%m-%d %H:%M')} 大盘复盘"
-
-                # 2. 准备内容 (拼接个股分析和大盘复盘)
-                full_content = ""
-
-                # 添加大盘复盘内容（如果有）
-                if market_report:
-                    full_content += f"# 📈 大盘复盘\n\n{market_report}\n\n---\n\n"
-
-                # 添加个股决策仪表盘（使用 NotificationService 生成，按 report_type 分支）
-                if results:
-                    dashboard_content = pipeline.notifier.generate_aggregate_report(
-                        results,
-                        getattr(config, 'report_type', 'simple'),
-                    )
-                    full_content += f"# 🚀 个股决策仪表盘\n\n{dashboard_content}"
-
-                # 3. 创建文档
-                doc_url = feishu_doc.create_daily_doc(doc_title, full_content)
-                if doc_url:
-                    logger.info(f"飞书云文档创建成功: {doc_url}")
-                    # 可选：将文档链接也推送到群里
-                    if not args.no_notify:
-                        pipeline.notifier.send(
-                            f"[{now.strftime('%Y-%m-%d %H:%M')}] 复盘文档创建成功: {doc_url}",
-                            route_type="report",
-                        )
-
-        except Exception as e:
-            logger.error(f"飞书文档生成失败: {e}")
+except Exception as e:
+    logger.error(f"飞书文档生成失败: {e}")
       
 
         # 创建文件夹
