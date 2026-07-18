@@ -922,7 +922,7 @@ def run_full_analysis(
 
         # 输出摘要
         if results:
-            logger.info("\n===== 分析结果摘要 =====")
+            logger.info("\n==== 分析结果摘要 ====")
             for r in sorted(results, key=lambda x: x.sentiment_score, reverse=True):
                 emoji = r.get_emoji()
                 logger.info(
@@ -930,6 +930,7 @@ def run_full_analysis(
                     f"评分 {r.sentiment_score} | {r.trend_prediction}"
                 )
 
+        # 以下所有代码统一缩进，留在顶层try内部
         logger.info("\n任务执行完成")
         full_content = ""
         try:
@@ -943,7 +944,7 @@ def run_full_analysis(
                 if market_report:
                     full_content += f"# 📈 大盘复盘\n{market_report}\n\n---\n\n"
                 doc_url = feishu_doc.create_doc(doc_title, full_content)
-                logger.info(f"复盘文档创建成功：{doc_url}")
+                logger.info(f"复盘文档创建成功: {doc_url}")
                 ding_webhook = os.getenv("DING_WEBHOOK")
                 if ding_webhook:
                     send_json = {
@@ -954,7 +955,7 @@ def run_full_analysis(
                     res.raise_for_status()
                     logger.info("钉钉消息推送成功")
         except Exception as e:
-            logger.error(f"飞书文档生成失败：{e}")
+            logger.error(f"飞书文档生成失败: {e}")
 
         os.makedirs("reports/logs", exist_ok=True)
         report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -966,7 +967,7 @@ def run_full_analysis(
             print("生成文件完整路径：", file_path)
             logger.info(f"本地报告已生成，路径：{file_path}")
         except Exception as write_err:
-            logger.error(f"写入本地txt文件失败：{write_err}")
+            logger.error(f"写入本地txt文件失败: {write_err}")
 
         try:
             if getattr(config, 'backtest_enabled', False):
@@ -989,6 +990,7 @@ def run_full_analysis(
         logger.info("\n任务执行完成")
         return True
 
+# 这一行【完全顶格，0个空格】，和函数最开头的try对齐
 except Exception as e:
     logger.exception(f"分析流程执行失败: {e}")
     if raise_errors:
