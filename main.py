@@ -932,35 +932,49 @@ def run_full_analysis(
 
         logger.info("\n任务执行完成")
 
-        # === 新增：生成飞书云文档 ===
+# === 新增：生成飞书云文档 ===
 try:
     full_content = ""
     from src.feishu_doc import FeishuDocManager
-    feishu_doc = FeishuDocManager()
-    if feishu_doc.is_configured() and (results or market_report):
-        logger.info("正在创建飞书云文档...")
-        tz_cn = timezone(timedelta(hours=8))
-        now = datetime.now(tz_cn)
-        doc_title = f"{now.strftime('%Y-%m-%d %H:%M')} 大盘复盘"
-        full_content = ""
-        # 原有拼接market_report、results代码不变
-        if market_report:
-            full_content += f"# 📈 大盘复盘\n{market_report}\n\n---\n\n"
-        # 个股内容拼接省略...
-        doc_url = feishu_doc.create_doc(doc_title, full_content)
-        logger.info(f"复盘文档创建成功：{doc_url}")
-        ding_webhook = os.getenv("DING_WEBHOOK")
-        if ding_webhook:
-            send_json = {
-                "msgtype": "text",
-                "text": {"content": f"{now.strftime('%Y-%m-%d %H:%M')} 复盘文档成功：\n{doc_url}"}
-            }
-            try:
-                res = requests.post(ding_webhook, json=send_json, timeout=15)
-                res.raise_for_status()
-                logger.info("钉钉消息推送成功")
-            except Exception as err:
-                logger.warning(f"钉钉推送失败: {str(err)}")
+    # 你原来所有飞书逻辑、拼接full_content代码全部放这里
+
+    # 文件写入、钉钉推送全部缩进在这个try内部
+    os.makedirs("reports/logs", exist_ok=True)
+    report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    report_text = full_content if full_content else "今日暂无分析数据"
+    file_path = f"reports/logs/{report_time}_daily_analysis.txt"
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(report_text)
+        print("生成文件完整路径：", file_path)
+        print("目录文件列表：", os.listdir("reports/logs"))
+        logger.info(f"本地报告已生成，路径：{file_path}")
+    except Exception as write_err:
+        logger.error(f"写入本地txt文件失败：{write_err}")
+
+    # 钉钉推送代码
+    ding_webhook = os.getenv("DING_WEBHOOK")
+    if ding_webhook:
+        send_json = {
+            "msgtype": "text",
+            "text": {"content": f"今日股票AI分析报告：\n{report_text}"}
+        }
+        try:
+            res = requests.post(ding_webhook, json=send_json, timeout=15)
+            res.raise_for_status()
+            logger.info("钉钉消息推送成功")
+        except Exception as err:
+            logger.warning(f"钉钉推送失败: {str(err)}")
+
+# 【必须保留！和开头try配对，放在整段代码最后】
+except Exception as e:
+    logger.error(f"飞书文档生成失败: {e}")
+    # 兜底强制生成报错文件，解决上传无文件警告
+    os.makedirs("reports/logs", exist_ok=True)
+    err_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    err_path = f"reports/logs/{err_time}_error_report.txt"
+    with open(err_path, "w", encoding="utf-8") as f:
+        f.write(f"程序执行异常：{str(e)}")
 
     # ---------------- 文件写入逻辑（在大try内部） ----------------
     os.makedirs("reports/logs", exist_ok=True)
