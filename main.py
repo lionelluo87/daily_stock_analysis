@@ -983,16 +983,17 @@ def run_full_analysis(
 
         # 纯英文文件名，避免中文报错
         file_path = f"reports/logs/{report_time}_daily_analysis.txt"
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(report_text)
-
+        try:
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(report_text)
         # 调试打印
         print("生成文件完整路径：", file_path)
         print("目录文件列表：", os.listdir("reports/logs"))
-
         logger.info(f"本地报告已生成，路径：{file_path}")
+    except Exception as write_err:
+        logger.error(f"写入本地txt文件失败：{write_err}")
 
-        # 钉钉推送
+        # 钉钉推送 代码不变
         ding_webhook = os.getenv("DING_WEBHOOK")
         if ding_webhook:
             send_json = {
@@ -1001,7 +1002,7 @@ def run_full_analysis(
             }
             try:
                 res = requests.post(ding_webhook, json=send_json, timeout=15)
-                res.raise_for_status()  # 新增这一行，捕获接口报错
+                res.raise_for_status()  # 捕获接口报错
                 logger.info("钉钉消息推送成功")
             except Exception as err:
                 logger.warning(f"钉钉推送失败: {str(err)}")
