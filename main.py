@@ -964,7 +964,7 @@ def run_full_analysis(
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(report_text)
             print("生成文件完整路径：", file_path)
-             logger.info(f"本地报告已生成，路径：{file_path}")
+            logger.info(f"本地报告已生成，路径：{file_path}")
         except Exception as write_err:
             logger.error(f"写入本地txt文件失败：{write_err}")
 
