@@ -32,7 +32,7 @@ import requests
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from dotenv import dotenv_values
 from src.config import setup_env
-os.makedirs("reports/logs", exist_ok=True)
+
 
 _INITIAL_PROCESS_ENV = dict(os.environ)
 setup_env()
@@ -973,18 +973,19 @@ def run_full_analysis(
 
         except Exception as e:
             logger.error(f"飞书文档生成失败: {e}")
+      
+
         # 创建文件夹
         os.makedirs("reports/logs", exist_ok=True)
         report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_text = full_content
 
-        # 纯英文文件名，彻底规避中文乱码识别失败
+        # 纯英文文件名，避免中文报错
         file_path = f"reports/logs/{report_time}_daily_analysis.txt"
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(report_text)
 
-        # 打印调试：运行时会输出文件夹里所有文件，方便看有没有生成
-        import os
+        # 调试打印
         print("生成文件完整路径：", file_path)
         print("目录文件列表：", os.listdir("reports/logs"))
 
