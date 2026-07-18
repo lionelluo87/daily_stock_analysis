@@ -936,9 +936,12 @@ def run_full_analysis(
 try:
     full_content = ""
     from src.feishu_doc import FeishuDocManager
-    # 原有飞书拼接内容逻辑...
-    
-    # 把文件写入、钉钉全部挪到try内部末尾
+    feishu_doc = FeishuDocManager()
+    if feishu_doc.is_configured() and (results or market_report):
+        logger.info("正在创建飞书云文档...")
+        # 你原有拼接full_content、创建doc_url的代码不变
+
+    # 【文件写入、钉钉推送 全部放在这个大try内部末尾】
     os.makedirs("reports/logs", exist_ok=True)
     report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_text = full_content if full_content else "今日暂无分析数据"
@@ -952,7 +955,7 @@ try:
     except Exception as write_err:
         logger.error(f"写入本地txt文件失败：{write_err}")
 
-    # 钉钉推送代码也放这里
+    # 钉钉推送
     ding_webhook = os.getenv("DING_WEBHOOK")
     if ding_webhook:
         send_json = {
@@ -966,8 +969,17 @@ try:
         except Exception as err:
             logger.warning(f"钉钉推送失败: {str(err)}")
 
+# 唯一的外层except，捕获整个大try里所有错误
 except Exception as e:
-    logger.error(f"飞书文档生成失败: {e}")
+    logger.error(f"飞书/整体流程执行失败：{e}")
+    # 兜底：就算主流程崩了，强制生成报错日志txt文件
+    fallback_text = f"程序执行异常，错误信息：{str(e)}"
+    os.makedirs("reports/logs", exist_ok=True)
+    fallback_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    fallback_path = f"reports/logs/{fallback_time}_error_report.txt"
+    with open(fallback_path, "w", encoding="utf-8") as f:
+        f.write(fallback_text)
+    print("兜底异常文件已生成：", fallback_path)
       
 
         # 创建文件夹
