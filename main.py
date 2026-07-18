@@ -955,15 +955,7 @@ try:
 
     # 【你的钉钉推送代码也缩进在这个大try里面】
 
-# 唯一配对的except，放在整段代码最末尾，同try一一对应
-except Exception as e:
-    logger.error(f"飞书流程异常：{e}")
-    # 兜底：就算程序报错，强制生成报错txt，解决上传无文件警告
-    os.makedirs("reports/logs", exist_ok=True)
-    err_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    err_path = f"reports/logs/{err_time}_error.txt"
-    with open(err_path, "w", encoding="utf-8") as f:
-        f.write(f"程序执行异常：{str(e)}")
+
 
         # 钉钉推送 代码不变
         ding_webhook = os.getenv("DING_WEBHOOK")
