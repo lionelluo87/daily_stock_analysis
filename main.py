@@ -934,6 +934,7 @@ def run_full_analysis(
 
         # === 新增：生成飞书云文档 ===
         try:
+            full_content = ""
             from src.feishu_doc import FeishuDocManager
 
             feishu_doc = FeishuDocManager()
