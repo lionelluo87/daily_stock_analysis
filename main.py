@@ -932,7 +932,6 @@ def run_full_analysis(
 
                 logger.info("\n任务执行完成")
 
-                # === 新增：生成飞书云文档 ===
                 full_content = ""
                 try:
                     from src.feishu_doc import FeishuDocManager
@@ -958,7 +957,6 @@ def run_full_analysis(
                 except Exception as e:
                     logger.error(f"飞书文档生成失败：{e}")
 
-                # 独立生成文件，一定执行
                 os.makedirs("reports/logs", exist_ok=True)
                 report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
                 report_text = full_content if full_content else "今日暂无分析数据"
@@ -971,7 +969,6 @@ def run_full_analysis(
                 except Exception as write_err:
                     logger.error(f"写入本地txt文件失败：{write_err}")
 
-                # === Auto backtest 回测代码
                 try:
                     if getattr(config, 'backtest_enabled', False):
                         from src.services.backtest_service import BacktestService
@@ -992,7 +989,6 @@ def run_full_analysis(
 
                 return True
 
-# 顶层try匹配的except，完全无缩进
 except Exception as e:
     logger.exception(f"分析流程执行失败: {e}")
     if raise_errors:
