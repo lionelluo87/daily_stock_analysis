@@ -929,8 +929,8 @@ def run_full_analysis(
                     f"{emoji} {r.name}({r.code}): {r.operation_advice} | "
                     f"评分 {r.sentiment_score} | {r.trend_prediction}"
                 )
-        logger.info("\n任务执行完成")
 
+        logger.info("\n任务执行完成")
         full_content = ""
         try:
             from src.feishu_doc import FeishuDocManager
@@ -986,6 +986,7 @@ def run_full_analysis(
         except Exception as e:
             logger.warning(f"自动回测失败（已忽略）: {e}")
 
+        logger.info("\n任务执行完成")
         return True
 
 except Exception as e:
