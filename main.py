@@ -933,68 +933,66 @@ def run_full_analysis(
         logger.info("\n任务执行完成")
 
 # === 新增：生成飞书云文档 ===
-full_content = ""
-# 飞书单独处理，唔嵌套大try
-try:
-    from src.feishu_doc import FeishuDocManager
-    feishu_doc = FeishuDocManager()
-    if feishu_doc.is_configured() and (results or market_report):
-        logger.info("正在创建飞书云文档...")
-        tz_cn = timezone(timedelta(hours=8))
-        now = datetime.now(tz_cn)
-        doc_title = f"{now.strftime('%Y-%m-%d %H:%M')} 大盘复盘"
-        full_content = ""
-        if market_report:
-            full_content += f"# 📈 大盘复盘\n{market_report}\n\n---\n\n"
-        doc_url = feishu_doc.create_doc(doc_title, full_content)
-        logger.info(f"复盘文档创建成功：{doc_url}")
-        ding_webhook = os.getenv("DING_WEBHOOK")
-        if ding_webhook:
-            send_json = {
-                "msgtype": "text",
-                "text": {"content": f"{now.strftime('%Y-%m-%d %H:%M')} 复盘文档成功：\n{doc_url}"}
-            }
-            res = requests.post(ding_webhook, json=send_json, timeout=15)
-            res.raise_for_status()
-            logger.info("钉钉消息推送成功")
-except Exception as e:
-    logger.error(f"飞书文档生成失败：{e}")
+# full_content = ""
+# # 飞书单独处理，唔嵌套大try
+# try:
+#     from src.feishu_doc import FeishuDocManager
+#     feishu_doc = FeishuDocManager()
+#     if feishu_doc.is_configured() and (results or market_report):
+#         logger.info("正在创建飞书云文档...")
+#         tz_cn = timezone(timedelta(hours=8))
+#         now = datetime.now(tz_cn)
+#         doc_title = f"{now.strftime('%Y-%m-%d %H:%M')} 大盘复盘"
+#         full_content = ""
+#         if market_report:
+#             full_content += f"# 📈 大盘复盘\n{market_report}\n\n---\n\n"
+#         doc_url = feishu_doc.create_doc(doc_title, full_content)
+#         logger.info(f"复盘文档创建成功：{doc_url}")
+#         ding_webhook = os.getenv("DING_WEBHOOK")
+#         if ding_webhook:
+#             send_json = {
+#                 "msgtype": "text",
+#                 "text": {"content": f"{now.strftime('%Y-%m-%d %H:%M')} 复盘文档成功：\n{doc_url}"}
+#             }
+#             res = requests.post(ding_webhook, json=send_json, timeout=15)
+#             res.raise_for_status()
+#             logger.info("钉钉消息推送成功")
+# except Exception as e:
+#     logger.error(f"飞书文档生成失败：{e}")
 
-# 独立生成文件，一定执行
-os.makedirs("reports/logs", exist_ok=True)
-report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-report_text = full_content if full_content else "今日暂无分析数据"
-file_path = f"reports/logs/{report_time}_daily_analysis.txt"
-try:
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(report_text)
-    print("生成文件完整路径：", file_path)
-    logger.info(f"本地报告已生成，路径：{file_path}")
-except Exception as write_err:
-    logger.error(f"写入本地txt文件失败：{write_err}")
+# # 独立生成文件，一定执行
+# os.makedirs("reports/logs", exist_ok=True)
+# report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+# report_text = full_content if full_content else "今日暂无分析数据"
+# file_path = f"reports/logs/{report_time}_daily_analysis.txt"
+# try:
+#     with open(file_path, "w", encoding="utf-8") as f:
+#         f.write(report_text)
+#     print("生成文件完整路径：", file_path)
+#     logger.info(f"本地报告已生成，路径：{file_path}")
+# except Exception as write_err:
+#     logger.error(f"写入本地txt文件失败：{write_err}")
 
-# === Auto backtest 回测代码（同上面代码对齐，取消多余缩进）
-try:
-    if getattr(config, 'backtest_enabled', False):
-        from src.services.backtest_service import BacktestService
+# # === Auto backtest 回测代码
+# try:
+#     if getattr(config, 'backtest_enabled', False):
+#         from src.services.backtest_service import BacktestService
+#         logger.info("开始自动回测...")
+#         service = BacktestService()
+#         stats = service.run_backtest(
+#             force=False,
+#             eval_window_days=getattr(config, 'backtest_eval_window_days', 10),
+#             min_age_days=getattr(config, 'backtest_min_age_days', 14),
+#             limit=200,
+#         )
+#         logger.info(
+#             f"自动回测完成: processed={stats.get('processed')} saved={stats.get('saved')} "
+#             f"completed={stats.get('completed')} insufficient={stats.get('insufficient')} errors={stats.get('errors')}"
+#         )
+# except Exception as e:
+#     logger.warning(f"自动回测失败（已忽略）: {e}")
 
-        logger.info("开始自动回测...")
-        service = BacktestService()
-        stats = service.run_backtest(
-            force=False,
-            eval_window_days=getattr(config, 'backtest_eval_window_days', 10),
-            min_age_days=getattr(config, 'backtest_min_age_days', 14),
-            limit=200,
-        )
-        logger.info(
-            f"自动回测完成: processed={stats.get('processed')} saved={stats.get('saved')} "
-            f"completed={stats.get('completed')} insufficient={stats.get('insufficient')} errors={stats.get('errors')}"
-        )
-except Exception as e:
-    logger.warning(f"自动回测失败（已忽略）: {e}")
-
-return True
-
+# return True
 # 【关键！同 run_full_analysis 最开头嘅 try 完全对齐，唔好缩进】
 except Exception as e:
     logger.exception(f"分析流程执行失败: {e}")
