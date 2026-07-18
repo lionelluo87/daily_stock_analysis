@@ -939,9 +939,30 @@ try:
     feishu_doc = FeishuDocManager()
     if feishu_doc.is_configured() and (results or market_report):
         logger.info("正在创建飞书云文档...")
-        # 你原有拼接full_content、创建doc_url的代码不变
+        tz_cn = timezone(timedelta(hours=8))
+        now = datetime.now(tz_cn)
+        doc_title = f"{now.strftime('%Y-%m-%d %H:%M')} 大盘复盘"
+        full_content = ""
+        # 原有拼接market_report、results代码不变
+        if market_report:
+            full_content += f"# 📈 大盘复盘\n{market_report}\n\n---\n\n"
+        # 个股内容拼接省略...
+        doc_url = feishu_doc.create_doc(doc_title, full_content)
+        logger.info(f"复盘文档创建成功：{doc_url}")
+        ding_webhook = os.getenv("DING_WEBHOOK")
+        if ding_webhook:
+            send_json = {
+                "msgtype": "text",
+                "text": {"content": f"{now.strftime('%Y-%m-%d %H:%M')} 复盘文档成功：\n{doc_url}"}
+            }
+            try:
+                res = requests.post(ding_webhook, json=send_json, timeout=15)
+                res.raise_for_status()
+                logger.info("钉钉消息推送成功")
+            except Exception as err:
+                logger.warning(f"钉钉推送失败: {str(err)}")
 
-    # 【文件写入、钉钉推送 全部放在这个大try内部末尾】
+    # ---------------- 文件写入逻辑（在大try内部） ----------------
     os.makedirs("reports/logs", exist_ok=True)
     report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_text = full_content if full_content else "今日暂无分析数据"
@@ -954,6 +975,16 @@ try:
         logger.info(f"本地报告已生成，路径：{file_path}")
     except Exception as write_err:
         logger.error(f"写入本地txt文件失败：{write_err}")
+
+# 唯一外层except，和最上方try配对
+except Exception as e:
+    logger.error(f"飞书文档生成失败：{e}")
+    # 兜底生成报错文件，保证目录一定有文件
+    os.makedirs("reports/logs", exist_ok=True)
+    err_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    err_path = f"reports/logs/{err_time}_error_report.txt"
+    with open(err_path, "w", encoding="utf-8") as f:
+        f.write(f"程序执行异常：{str(e)}")
 
     # 钉钉推送
     ding_webhook = os.getenv("DING_WEBHOOK")
