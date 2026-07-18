@@ -936,9 +936,10 @@ def run_full_analysis(
 try:
     full_content = ""
     from src.feishu_doc import FeishuDocManager
-    # 这里粘贴你原本所有飞书业务逻辑（创建文档、拼接full_content那段代码）
-    
-    # 正常流程：生成日报文件
+    # 【这里粘贴你原本所有飞书逻辑代码】
+    # feishu_doc = FeishuDocManager() ... 拼接full_content、创建文档全部放此处
+
+    # 正常流程生成报告文件
     os.makedirs("reports/logs", exist_ok=True)
     report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_text = full_content if full_content else "今日暂无分析数据"
@@ -952,12 +953,12 @@ try:
     except Exception as write_err:
         logger.error(f"写入本地txt文件失败：{write_err}")
 
-    # 你的钉钉推送代码也全部放在这个缩进内
-    
-# 唯一配对的except，在整个大try最后，语法不会报错
+    # 【你的钉钉推送代码也缩进在这个大try里面】
+
+# 唯一配对的except，放在整段代码最末尾，同try一一对应
 except Exception as e:
     logger.error(f"飞书流程异常：{e}")
-    # 兜底：程序报错也强制生成文件，杜绝无文件警告
+    # 兜底：就算程序报错，强制生成报错txt，解决上传无文件警告
     os.makedirs("reports/logs", exist_ok=True)
     err_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     err_path = f"reports/logs/{err_time}_error.txt"
