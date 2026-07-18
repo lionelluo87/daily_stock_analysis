@@ -936,7 +936,9 @@ def run_full_analysis(
 try:
     full_content = ""
     from src.feishu_doc import FeishuDocManager
-    # 你原来所有飞书、文件写入、钉钉代码全部缩进在这里
+    # 这里粘贴你原本所有飞书业务逻辑（创建文档、拼接full_content那段代码）
+    
+    # 正常流程：生成日报文件
     os.makedirs("reports/logs", exist_ok=True)
     report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_text = full_content if full_content else "今日暂无分析数据"
@@ -946,60 +948,21 @@ try:
             f.write(report_text)
         print("生成文件完整路径：", file_path)
         print("目录文件列表：", os.listdir("reports/logs"))
+        logger.info(f"本地报告已生成，路径：{file_path}")
     except Exception as write_err:
-        logger.error(f"写入文件失败：{write_err}")
+        logger.error(f"写入本地txt文件失败：{write_err}")
 
-# 【关键！必须放在整段try的最后，配对开头try】
+    # 你的钉钉推送代码也全部放在这个缩进内
+    
+# 唯一配对的except，在整个大try最后，语法不会报错
 except Exception as e:
     logger.error(f"飞书流程异常：{e}")
-    # 兜底生成报错文件，消除上传无文件警告
+    # 兜底：程序报错也强制生成文件，杜绝无文件警告
     os.makedirs("reports/logs", exist_ok=True)
-    err_path = f"reports/logs/{datetime.now().strftime('%Y%m%d_%H%M%S')}_error.txt"
+    err_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    err_path = f"reports/logs/{err_time}_error.txt"
     with open(err_path, "w", encoding="utf-8") as f:
-        f.write(f"程序异常：{str(e)}")
-    # 钉钉推送
-    ding_webhook = os.getenv("DING_WEBHOOK")
-    if ding_webhook:
-        send_json = {
-            "msgtype": "text",
-            "text": {"content": f"今日股票AI分析报告：\n{report_text}"}
-        }
-        try:
-            res = requests.post(ding_webhook, json=send_json, timeout=15)
-            res.raise_for_status()
-            logger.info("钉钉消息推送成功")
-        except Exception as err:
-            logger.warning(f"钉钉推送失败: {str(err)}")
-
-# 唯一的外层except，捕获整个大try里所有错误
-except Exception as e:
-    logger.error(f"飞书/整体流程执行失败：{e}")
-    # 兜底：就算主流程崩了，强制生成报错日志txt文件
-    fallback_text = f"程序执行异常，错误信息：{str(e)}"
-    os.makedirs("reports/logs", exist_ok=True)
-    fallback_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fallback_path = f"reports/logs/{fallback_time}_error_report.txt"
-    with open(fallback_path, "w", encoding="utf-8") as f:
-        f.write(fallback_text)
-    print("兜底异常文件已生成：", fallback_path)
-      
-
-        # 创建文件夹
-        os.makedirs("reports/logs", exist_ok=True)
-        report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_text = full_content if full_content else "今日暂无分析数据"
-
-        # 纯英文文件名，避免中文报错
-        file_path = f"reports/logs/{report_time}_daily_analysis.txt"
-        try:
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write(report_text)
-            # 调试打印
-            print("生成文件完整路径：", file_path)
-            print("目录文件列表：", os.listdir("reports/logs"))
-            logger.info(f"本地报告已生成，路径：{file_path}")
-        except Exception as write_err:
-            logger.error(f"写入本地txt文件失败：{write_err}")
+        f.write(f"程序执行异常：{str(e)}")
 
         # 钉钉推送 代码不变
         ding_webhook = os.getenv("DING_WEBHOOK")
