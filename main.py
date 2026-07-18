@@ -933,43 +933,53 @@ def run_full_analysis(
         logger.info("\n任务执行完成")
 
 # === 新增：生成飞书云文档 ===
+full_content = ""
 try:
-    full_content = ""
     from src.feishu_doc import FeishuDocManager
-    # 【这里粘贴你原本所有飞书逻辑代码】
-    # feishu_doc = FeishuDocManager() ... 拼接full_content、创建文档全部放此处
-
-    # 正常流程生成报告文件
-    os.makedirs("reports/logs", exist_ok=True)
-    report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    report_text = full_content if full_content else "今日暂无分析数据"
-    file_path = f"reports/logs/{report_time}_daily_analysis.txt"
-    try:
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(report_text)
-        print("生成文件完整路径：", file_path)
-        print("目录文件列表：", os.listdir("reports/logs"))
-        logger.info(f"本地报告已生成，路径：{file_path}")
-    except Exception as write_err:
-        logger.error(f"写入本地txt文件失败：{write_err}")
-
-    # 【你的钉钉推送代码也缩进在这个大try里面】
-
-
-
-        # 钉钉推送 代码不变
+    # 你原本所有飞书拼接、创建文档代码放这里
+    feishu_doc = FeishuDocManager()
+    if feishu_doc.is_configured() and (results or market_report):
+        logger.info("正在创建飞书云文档...")
+        tz_cn = timezone(timedelta(hours=8))
+        now = datetime.now(tz_cn)
+        doc_title = f"{now.strftime('%Y-%m-%d %H:%M')} 大盘复盘"
+        full_content = ""
+        if market_report:
+            full_content += f"# 📈 大盘复盘\n{market_report}\n\n---\n\n"
+        # 你原有个股拼接代码保留
+        doc_url = feishu_doc.create_doc(doc_title, full_content)
+        logger.info(f"复盘文档创建成功：{doc_url}")
+        # 飞书配套钉钉推送
         ding_webhook = os.getenv("DING_WEBHOOK")
         if ding_webhook:
             send_json = {
                 "msgtype": "text",
-                "text": {"content": f"今日股票AI分析报告：\n{report_text}"}
+                "text": {"content": f"{now.strftime('%Y-%m-%d %H:%M')} 复盘文档成功：\n{doc_url}"}
             }
             try:
                 res = requests.post(ding_webhook, json=send_json, timeout=15)
-                res.raise_for_status()  # 捕获接口报错
+                res.raise_for_status()
                 logger.info("钉钉消息推送成功")
             except Exception as err:
                 logger.warning(f"钉钉推送失败: {str(err)}")
+except Exception as e:
+    logger.error(f"飞书文档生成失败：{e}")
+
+# 【文件生成代码放在try外面，一定会执行，100%生成txt】
+os.makedirs("reports/logs", exist_ok=True)
+report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+report_text = full_content if full_content else "今日暂无分析数据"
+file_path = f"reports/logs/{report_time}_daily_analysis.txt"
+try:
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(report_text)
+    print("生成文件完整路径：", file_path)
+    print("目录文件列表：", os.listdir("reports/logs"))
+    logger.info(f"本地报告已生成，路径：{file_path}")
+except Exception as write_err:
+    logger.error(f"写入本地txt文件失败：{write_err}")
+
+
         # === Auto backtest ===
         try:
             if getattr(config, 'backtest_enabled', False):
