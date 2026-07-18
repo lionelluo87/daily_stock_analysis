@@ -990,7 +990,19 @@ def run_full_analysis(
 
         logger.info(f"本地报告已生成，路径：{file_path}")
 
-
+        # 钉钉推送
+        ding_webhook = os.getenv("DING_WEBHOOK")
+        if ding_webhook:
+            send_json = {
+                "msgtype": "text",
+                "text": {"content": f"今日股票AI分析报告：\n{report_text}"}
+            }
+            try:
+                res = requests.post(ding_webhook, json=send_json, timeout=15)
+                res.raise_for_status()  # 新增这一行，捕获接口报错
+                logger.info("钉钉消息推送成功")
+            except Exception as err:
+                logger.warning(f"钉钉推送失败: {str(err)}")
         # === Auto backtest ===
         try:
             if getattr(config, 'backtest_enabled', False):
