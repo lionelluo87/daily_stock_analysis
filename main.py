@@ -932,7 +932,6 @@ def run_full_analysis(
 
                 logger.info("\n任务执行完成")
 
-                # ========== 修正后：全部缩进在try内部 ==========
                 # === 新增：生成飞书云文档 ===
                 full_content = ""
                 try:
@@ -943,7 +942,6 @@ def run_full_analysis(
                         tz_cn = timezone(timedelta(hours=8))
                         now = datetime.now(tz_cn)
                         doc_title = f"{now.strftime('%Y-%m-%d %H:%M')} 大盘复盘"
-                        full_content = ""
                         if market_report:
                             full_content += f"# 📈 大盘复盘\n{market_report}\n\n---\n\n"
                         doc_url = feishu_doc.create_doc(doc_title, full_content)
@@ -993,9 +991,8 @@ def run_full_analysis(
                     logger.warning(f"自动回测失败（已忽略）: {e}")
 
                 return True
-        # ==============================================
 
-# 【无缩进，和函数开头try对齐】
+# 顶层try匹配的except，完全无缩进
 except Exception as e:
     logger.exception(f"分析流程执行失败: {e}")
     if raise_errors:
