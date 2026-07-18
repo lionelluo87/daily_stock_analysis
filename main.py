@@ -973,26 +973,22 @@ def run_full_analysis(
 
         except Exception as e:
             logger.error(f"飞书文档生成失败: {e}")
-        # 保存本地报告
+        # 创建文件夹
         os.makedirs("reports/logs", exist_ok=True)
-        report_time = datetime.now().strftime("%Y%m%d")
+        report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_text = full_content
-        with open(f"reports/logs/{report_time}_daily_report.txt","w",encoding="utf-8") as f:
-            f.write(report_text)
-            logger.info(f"本地报告已生成，路径：reports/logs/{report_time}每日分析报告.txt")
 
-        # 钉钉推送
-        ding_webhook = os.getenv("DING_WEBHOOK")
-        if ding_webhook:
-            send_json = {
-                "msgtype": "text",
-                "text": {"content": f"今日股票AI分析报告：\n{report_text}"},
-            }
-            try:
-                res = requests.post(ding_webhook, json=send_json, timeout=15)
-                logger.info("钉钉消息推送成功")
-            except Exception as err:
-                logger.warning(f"钉钉推送失败：{str(err)}")
+        # 纯英文文件名，彻底规避中文乱码识别失败
+        file_path = f"reports/logs/{report_time}_daily_analysis.txt"
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(report_text)
+
+        # 打印调试：运行时会输出文件夹里所有文件，方便看有没有生成
+        import os
+        print("生成文件完整路径：", file_path)
+        print("目录文件列表：", os.listdir("reports/logs"))
+
+        logger.info(f"本地报告已生成，路径：{file_path}")
 
 
         # === Auto backtest ===
