@@ -978,7 +978,7 @@ def run_full_analysis(
         # 创建文件夹
         os.makedirs("reports/logs", exist_ok=True)
         report_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_text = full_content
+        report_text = full_content if full_content else "今日暂无分析数据"
 
         # 纯英文文件名，避免中文报错
         file_path = f"reports/logs/{report_time}_daily_analysis.txt"
